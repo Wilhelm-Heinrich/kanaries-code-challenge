@@ -8,7 +8,10 @@ interface IConfig {
 }
 
 interface IProps {
-	data: number[]
+	data: {
+		name: string
+		value: number
+	}[]
 	config: IConfig
 }
 
@@ -22,6 +25,8 @@ interface IArc {
 }
 
 const Pie: FC<IProps> = ({ data, config }) => {
+	const types = data.map(({ name }) => name)
+	const values = data.map(({ value }) => value)
 	const padding = config.padding || 4
 	const innerRadius = 0
 	const outerRadius = config.width / 2 - padding * 2
@@ -36,12 +41,8 @@ const Pie: FC<IProps> = ({ data, config }) => {
 	const [arcs, setArcs] = useState<IArc[]>([])
 
 	useEffect(() => {
-		const arcs = d3.pie().padAngle(padAngle).sort(null)(data)
+		const arcs = d3.pie().padAngle(padAngle).sort(null)(values)
 		setArcs(arcs)
-		const arcLabel = d3
-			.arc()
-			.innerRadius(labelRadius)
-			.outerRadius(labelRadius)
 	}, [data])
 
 	return (
@@ -63,11 +64,13 @@ const Pie: FC<IProps> = ({ data, config }) => {
 							<path
 								fill={c}
 								key={arcInfo.index}
-								d={d3.arc()({
-									...arcInfo,
-									innerRadius,
-									outerRadius
-								})}
+								d={
+									d3.arc()({
+										...arcInfo,
+										innerRadius,
+										outerRadius
+									}) || ''
+								}
 								strokeLinejoin="round"
 								stroke="#FFF"
 								strokeLinecap="butt"
@@ -78,7 +81,7 @@ const Pie: FC<IProps> = ({ data, config }) => {
 			{/* 文字 */}
 			<g transform={`translate(${origin[0]},${origin[1]})`}>
 				{arcs &&
-					arcs.map((arcInfo) => {
+					arcs.map((arcInfo, i) => {
 						return (
 							<text
 								key={arcInfo.index}
@@ -91,7 +94,7 @@ const Pie: FC<IProps> = ({ data, config }) => {
 								})})`}
 								fontSize="12"
 							>
-								{arcInfo.data}
+								{types[i]}
 							</text>
 						)
 					})}

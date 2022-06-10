@@ -14,24 +14,29 @@ enum IDirection {
 }
 
 interface IProps {
-	data: number[]
+	data: {
+		name: string
+		value: number
+	}[]
 	config: IConfig
 }
 
 const Line: FC<IProps> = ({ data, config }) => {
+	const types = data.map(({ name }) => name)
+	const values = data.map(({ value }) => value)
 	const padding = config.padding || 4
 
 	const xAxis = useRef<SVGGElement>(null)
 	const yAxis = useRef<SVGGElement>(null)
 
 	const maxValue = useMemo(() => {
-		return Math.max(...data)
+		return Math.max(...values)
 	}, [data])
 
 	const xScale = useMemo(() => {
 		return d3
 			.scaleBand()
-			.domain(data.map(String))
+			.domain(types)
 			.range([0, config.width - padding * 2 - 40])
 	}, [data])
 
@@ -72,7 +77,7 @@ const Line: FC<IProps> = ({ data, config }) => {
 		>
 			{/* 主图 */}
 			<g>
-				{data.map((d, i) => {
+				{values.map((d, i) => {
 					if (i === data.length - 1) return null
 					return (
 						<line
@@ -92,7 +97,7 @@ const Line: FC<IProps> = ({ data, config }) => {
 							}
 							y2={
 								config.height -
-								(data[i + 1] / maxValue) * maxYSacle -
+								(values[i + 1] / maxValue) * maxYSacle -
 								30
 							}
 							stroke="#ccc"
@@ -101,7 +106,7 @@ const Line: FC<IProps> = ({ data, config }) => {
 				})}
 			</g>
 			<g>
-				{data.map((d, i) => {
+				{values.map((d, i) => {
 					return (
 						<circle
 							key={i}
