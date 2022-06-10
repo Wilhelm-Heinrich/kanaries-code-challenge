@@ -1,2 +1,8 @@
+node_modules
 */node_modules
 **/node_modules
+***node_modules
+
+day1_lite-mobx/node_modules
+day2_snake/node_modules
+day3_lite-charts/node_modules
