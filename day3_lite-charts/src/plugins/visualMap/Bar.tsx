@@ -1,0 +1,102 @@
+import React, { FC, useEffect, useRef, useMemo } from 'react'
+import * as d3 from 'd3'
+
+interface IConfig {
+	width: number
+	height: number
+	padding?: number
+	direction?: IDirection
+}
+
+enum IDirection {
+	H = 'horizontal',
+	V = 'vertical'
+}
+
+interface IProps {
+	data: number[]
+	config: IConfig
+}
+
+const Bar: FC<IProps> = ({ data, config }) => {
+	const padding = config.padding || 4
+
+	const xAxis = useRef<SVGGElement>(null)
+	const yAxis = useRef<SVGGElement>(null)
+
+	const scale = useMemo(() => {
+		return d3
+			.scaleBand()
+			.domain(data.map(String))
+			.range([0, config.width - padding * 2 - 40])
+	}, [data])
+
+	const maxYSacle = useMemo(() => {
+		return (config.width - 60) / 2
+	}, [data])
+
+	const yScale = useMemo(() => {
+		return d3
+			.scaleLinear()
+			.domain([maxYSacle, 0])
+			.range([0, config.width - padding * 2 - 40])
+	}, [data])
+
+	useEffect(() => {
+		if (xAxis.current) {
+			const xAxisD3 = d3.axisBottom(scale)
+			d3.select(xAxis.current).call(xAxisD3)
+		}
+	}, [data])
+
+	useEffect(() => {
+		if (yAxis.current) {
+			const yAxisD3 = d3.axisLeft(yScale)
+			d3.select(yAxis.current).call(yAxisD3)
+		}
+	}, [data])
+
+	return (
+		<svg
+			style={{
+				width: config.width,
+				height: config.height,
+				border: '1px solid #CCC',
+				padding,
+				boxSizing: 'border-box'
+			}}
+		>
+			{/* 主图 */}
+			<g>
+				{data.map((d, i) => {
+					return (
+						<rect
+							key={i}
+							x={scale.bandwidth() * i + padding + 30}
+							y={config.width - d * 2 - 30}
+							width={scale.bandwidth() - 10}
+							height={d * 2}
+							fill="steelblue"
+						></rect>
+					)
+				})}
+			</g>
+			<g
+				ref={xAxis}
+				transform={`translate(30, ${config.width - padding * 2 - 20})`}
+			></g>
+			<g ref={yAxis} transform={`translate(30, 20)`}></g>
+		</svg>
+	)
+}
+
+Bar.defaultProps = {
+	config: {
+		width: 200,
+		height: 200,
+		padding: 4,
+		direction: IDirection.H
+	}
+}
+
+export default Bar
