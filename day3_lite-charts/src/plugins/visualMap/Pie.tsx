@@ -4,7 +4,6 @@ import { DefaultArcObject } from 'd3'
 
 interface IConfig {
 	width: number
-	height: number
 	padding?: number
 }
 
@@ -31,7 +30,7 @@ const Pie: FC<IProps> = ({ data, config }) => {
 	const color = d3.scaleOrdinal(d3.schemeCategory10)
 	const origin = [
 		(config.width - padding * 2) / 2,
-		(config.height - padding * 2) / 2
+		(config.width - padding * 2) / 2
 	]
 
 	const [arcs, setArcs] = useState<IArc[]>([])
@@ -49,7 +48,7 @@ const Pie: FC<IProps> = ({ data, config }) => {
 		<svg
 			style={{
 				width: config.width,
-				height: config.height,
+				height: config.width,
 				border: '1px solid #CCC',
 				padding,
 				boxSizing: 'border-box'
@@ -70,7 +69,6 @@ const Pie: FC<IProps> = ({ data, config }) => {
 									outerRadius
 								})}
 								strokeLinejoin="round"
-								strokeWidth="1"
 								stroke="#FFF"
 								strokeLinecap="butt"
 							></path>
@@ -86,6 +84,12 @@ const Pie: FC<IProps> = ({ data, config }) => {
 								key={arcInfo.index}
 								fill="#FFF"
 								textAnchor="middle"
+								transform={`translate(${d3.arc().centroid({
+									...arcInfo,
+									innerRadius,
+									outerRadius
+								})})`}
+								fontSize="12"
 							>
 								{arcInfo.data}
 							</text>
@@ -99,7 +103,6 @@ const Pie: FC<IProps> = ({ data, config }) => {
 Pie.defaultProps = {
 	config: {
 		width: 200,
-		height: 200,
 		padding: 4
 	}
 }

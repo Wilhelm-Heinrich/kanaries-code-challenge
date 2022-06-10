@@ -24,7 +24,11 @@ const Bar: FC<IProps> = ({ data, config }) => {
 	const xAxis = useRef<SVGGElement>(null)
 	const yAxis = useRef<SVGGElement>(null)
 
-	const scale = useMemo(() => {
+	const maxValue = useMemo(() => {
+		return Math.max(...data)
+	}, [data])
+
+	const xScale = useMemo(() => {
 		return d3
 			.scaleBand()
 			.domain(data.map(String))
@@ -32,19 +36,19 @@ const Bar: FC<IProps> = ({ data, config }) => {
 	}, [data])
 
 	const maxYSacle = useMemo(() => {
-		return (config.width - 60) / 2
+		return config.height - 60
 	}, [data])
 
 	const yScale = useMemo(() => {
 		return d3
 			.scaleLinear()
-			.domain([maxYSacle, 0])
-			.range([0, config.width - padding * 2 - 40])
+			.domain([maxValue, 0])
+			.range([0, config.height - padding * 2 - 40])
 	}, [data])
 
 	useEffect(() => {
 		if (xAxis.current) {
-			const xAxisD3 = d3.axisBottom(scale)
+			const xAxisD3 = d3.axisBottom(xScale)
 			d3.select(xAxis.current).call(xAxisD3)
 		}
 	}, [data])
@@ -72,10 +76,10 @@ const Bar: FC<IProps> = ({ data, config }) => {
 					return (
 						<rect
 							key={i}
-							x={scale.bandwidth() * i + padding + 30}
-							y={config.width - d * 2 - 30}
-							width={scale.bandwidth() - 10}
-							height={d * 2}
+							x={xScale.bandwidth() * i + padding + 30}
+							y={config.height - (d / maxValue) * maxYSacle - 30}
+							width={xScale.bandwidth() - 10}
+							height={(d / maxValue) * maxYSacle}
 							fill="steelblue"
 						></rect>
 					)
@@ -83,7 +87,7 @@ const Bar: FC<IProps> = ({ data, config }) => {
 			</g>
 			<g
 				ref={xAxis}
-				transform={`translate(30, ${config.width - padding * 2 - 20})`}
+				transform={`translate(30, ${config.height - padding * 2 - 20})`}
 			></g>
 			<g ref={yAxis} transform={`translate(30, 20)`}></g>
 		</svg>

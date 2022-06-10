@@ -24,7 +24,11 @@ const Line: FC<IProps> = ({ data, config }) => {
 	const xAxis = useRef<SVGGElement>(null)
 	const yAxis = useRef<SVGGElement>(null)
 
-	const scale = useMemo(() => {
+	const maxValue = useMemo(() => {
+		return Math.max(...data)
+	}, [data])
+
+	const xScale = useMemo(() => {
 		return d3
 			.scaleBand()
 			.domain(data.map(String))
@@ -32,19 +36,19 @@ const Line: FC<IProps> = ({ data, config }) => {
 	}, [data])
 
 	const maxYSacle = useMemo(() => {
-		return (config.width - 60) / 2
+		return config.height - 60
 	}, [data])
 
 	const yScale = useMemo(() => {
 		return d3
 			.scaleLinear()
-			.domain([maxYSacle, 0])
-			.range([0, config.width - padding * 2 - 40])
+			.domain([maxValue, 0])
+			.range([0, config.height - padding * 2 - 40])
 	}, [data])
 
 	useEffect(() => {
 		if (xAxis.current) {
-			const xAxisD3 = d3.axisBottom(scale)
+			const xAxisD3 = d3.axisBottom(xScale)
 			d3.select(xAxis.current).call(xAxisD3)
 		}
 	}, [data])
@@ -74,19 +78,23 @@ const Line: FC<IProps> = ({ data, config }) => {
 						<line
 							key={i}
 							x1={
-								scale.bandwidth() * i +
+								xScale.bandwidth() * i +
 								padding +
 								25 +
-								scale.bandwidth() / 2
+								xScale.bandwidth() / 2
 							}
-							y1={config.width - d * 2 - 30}
+							y1={config.height - (d / maxValue) * maxYSacle - 30}
 							x2={
-								scale.bandwidth() * (i + 1) +
+								xScale.bandwidth() * (i + 1) +
 								padding +
 								25 +
-								scale.bandwidth() / 2
+								xScale.bandwidth() / 2
 							}
-							y2={config.width - data[i + 1] * 2 - 30}
+							y2={
+								config.height -
+								(data[i + 1] / maxValue) * maxYSacle -
+								30
+							}
 							stroke="#ccc"
 						></line>
 					)
@@ -98,12 +106,12 @@ const Line: FC<IProps> = ({ data, config }) => {
 						<circle
 							key={i}
 							cx={
-								scale.bandwidth() * i +
+								xScale.bandwidth() * i +
 								padding +
 								25 +
-								scale.bandwidth() / 2
+								xScale.bandwidth() / 2
 							}
-							cy={config.width - d * 2 - 30}
+							cy={config.height - (d / maxValue) * maxYSacle - 30}
 							r={2}
 							fill="steelblue"
 						></circle>
@@ -113,7 +121,7 @@ const Line: FC<IProps> = ({ data, config }) => {
 
 			<g
 				ref={xAxis}
-				transform={`translate(30, ${config.width - padding * 2 - 20})`}
+				transform={`translate(30, ${config.height - padding * 2 - 20})`}
 			></g>
 			<g ref={yAxis} transform={`translate(30, 20)`}></g>
 		</svg>
